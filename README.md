@@ -16,6 +16,7 @@ With the help of browserify `eccrypto` provides different implementations for Br
 * Use WebCryptoAPI where possible
 * Promise-driven API
 * Only secp256k1 curve, only SHA-512 (KDF), HMAC-SHA-256 (HMAC) and AES-256-CBC for ECIES
+* Compressed key support
 
 ### Native crypto API limitations
 
@@ -42,7 +43,7 @@ var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
 // A new random 32-byte private key.
-var privateKey = crypto.randomBytes(32);
+var privateKey = eccrypto.generatePrivate();
 // Corresponding uncompressed (65-byte) public key.
 var publicKey = eccrypto.getPublic(privateKey);
 
@@ -63,12 +64,11 @@ eccrypto.sign(privateKey, msg).then(function(sig) {
 ### ECDH
 
 ```js
-var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
-var privateKeyA = crypto.randomBytes(32);
+var privateKeyA = eccrypto.generatePrivate();
 var publicKeyA = eccrypto.getPublic(privateKeyA);
-var privateKeyB = crypto.randomBytes(32);
+var privateKeyB = eccrypto.generatePrivate();
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 
 eccrypto.derive(privateKeyA, publicKeyB).then(function(sharedKey1) {
@@ -81,16 +81,15 @@ eccrypto.derive(privateKeyA, publicKeyB).then(function(sharedKey1) {
 ### ECIES
 
 ```js
-var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
-var privateKeyA = crypto.randomBytes(32);
+var privateKeyA = eccrypto.generatePrivate();
 var publicKeyA = eccrypto.getPublic(privateKeyA);
-var privateKeyB = crypto.randomBytes(32);
+var privateKeyB = eccrypto.generatePrivate();
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 
 // Encrypting the message for B.
-eccrypto.encrypt(publicKeyB, Buffer("msg to b")).then(function(encrypted) {
+eccrypto.encrypt(publicKeyB, Buffer.from("msg to b")).then(function(encrypted) {
   // B decrypting the message.
   eccrypto.decrypt(privateKeyB, encrypted).then(function(plaintext) {
     console.log("Message to part B:", plaintext.toString());
@@ -98,7 +97,7 @@ eccrypto.encrypt(publicKeyB, Buffer("msg to b")).then(function(encrypted) {
 });
 
 // Encrypting the message for A.
-eccrypto.encrypt(publicKeyA, Buffer("msg to a")).then(function(encrypted) {
+eccrypto.encrypt(publicKeyA, Buffer.from("msg to a")).then(function(encrypted) {
   // A decrypting the message.
   eccrypto.decrypt(privateKeyA, encrypted).then(function(plaintext) {
     console.log("Message to part A:", plaintext.toString());
